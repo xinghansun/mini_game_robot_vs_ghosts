@@ -1,10 +1,10 @@
 import pygame
-from random import randint, choice, uniform
+from random import randint, uniform
 import math
 from copy import copy
 from time import time
 
-
+# bullet objects that can be shot in horizontal directions
 class Bullet:
     def __init__(self, color, str_color, damage, cost, radius = 5, velocity = 8):
         self.color = color
@@ -26,6 +26,7 @@ class Bullet:
         self.position = position
         self.direction = direction
 
+    # A bullet should disapear when it hits a target or is out of the window boundary
     def move(self, objects, x_boundary):
         if not self.fired:
             raise ValueError('The bullet has not been fired yet.')
@@ -55,7 +56,7 @@ class Bullet:
         else:
             return None
     
-
+# store obejct to keep inventory of bullets 
 class Store:
     def __init__(self):
         self.merchandise = {}
@@ -66,7 +67,7 @@ class Store:
     def search(self, merchandise_num):
         return copy(self.merchandise[merchandise_num])
 
-
+# clip object which keeps track of unfired and fired bullets
 class Clip:
     def __init__(self):
         self.clip = []
@@ -98,6 +99,7 @@ class Clip:
             pygame.draw.circle(surface = window, color = bullet.color, center = position, radius = bullet.radius)
             x_pos += 5 + bullet.radius*2
 
+# coin obejct to be picked up at random locations
 class Coin:
     def __init__(self, window_w, window_h, coin_image_path = 'coin.png'):
         self.window_w = window_w
@@ -115,6 +117,7 @@ class Coin:
     def value(self):
         return self.__value
     
+    # coins changes its location and appear at any coordinate of the window
     def refresh(self):
         self.position = (randint(0, self.window_w - self._width), randint(0, self.window_h - self._height))
         return self.value
@@ -123,7 +126,7 @@ class Coin:
         window.blit(self.image, self.position)
 
 
-
+# coinbag object to count the coins collected and spent
 class CoinBag:
     def __init__(self, coin_image_path = 'coin.png'):
         self.__balance = 0
@@ -148,7 +151,7 @@ class CoinBag:
         window.blit(text, (x + self.image.get_width() + 5, y + self.image.get_height()/2 - text.get_height()/2))
 
 
-
+# robot obejct which has the ability to move, pick up coins, shoot bullets
 class Robot:
     def __init__(self, window_w, window_h, robot_image_path = 'robot.png', velocity = 5, health = 100):
         self.window_w = window_w
@@ -158,7 +161,7 @@ class Robot:
         self._width = self.image.get_width()
         self._height = self.image.get_height()
         
-        self.position = (window_w/2 - self._width/2, window_h/2 - self._height/2)
+        self.position = (window_w/2 - self._width/2, window_h/2 - self._height/2) # robot always appear in the center of the window in the begining of the game
         
         self.velocity = velocity
         self.health = health
@@ -167,6 +170,7 @@ class Robot:
         self.coin_bag = CoinBag()
         self.clip = Clip()
 
+    # purchase from store with the input merchandise_num. nothing happens if not enough coins in the coinbag
     def purchase(self, merchandise_num, store):
         if merchandise_num not in store.merchandise:
             raise ValueError('Invalid merchandise number.')
@@ -177,6 +181,7 @@ class Robot:
             self.clip.load(merchandise)
             self.coin_bag.spend(merchandise.cost)
         
+    # pick up coin and refresh the location of the coin
     def pick_coin(self, coin):
         if (self.position[0] <= coin.position[0]+coin._width/2 <= self.position[0] + self._width) and (self.position[1] <= coin.position[1]+coin._height/2 <= self.position[1] + self._height):
             self.coin_bag.earn(coin.refresh())
@@ -184,7 +189,7 @@ class Robot:
             pass
         
     def shoot(self, direction):
-        if direction not in [-1, 1]:
+        if direction not in [-1, 1]: # -1 shoot left; 1 shoot right
             return
         bullet = self.clip.shoot()
         if bullet is None:
@@ -208,7 +213,7 @@ class Robot:
             window.blit(self.image, self.position)
 
 
-
+# portal object owns minion(s) that specificly belong to it. minion(s) can be destroyed but will reborn as long as the portal exists.
 class Portal:
     def __init__(self, portal_image_path = 'door.png', position = (0,0), side = 'LT', health = 2, reborn_cooldown = 200):
         self.image = pygame.image.load(portal_image_path)
@@ -221,13 +226,13 @@ class Portal:
         self.reborn_cooldown = reborn_cooldown
         self.timer = None
         
-        if side == 'LT':
+        if side == 'LT': # portal appears at left top corner
             self.position = position
-        elif side == 'RT':
+        elif side == 'RT': # right top
             self.position = (position[0] - self._width, position[1])
-        elif side == 'LB':
+        elif side == 'LB': # left bottom
             self.position = (position[0], position[1] - self._height)
-        elif side == 'RB':
+        elif side == 'RB': # right bottom
             self.position = (position[0] - self._width, position[1] - self._height)
         else:
             raise ValueError('Illegal side mark.')
@@ -239,7 +244,7 @@ class Portal:
             self.minion.current_health = 0
             return
         window.blit(self.image, self.position)
-        self.minion.generate(window, self.minion.move(target_pos))
+        self.minion.generate(window, self.minion.move(target_pos))  # by integrating minion move here, minion(s) can disappear if portal is broke
 
     def reborn_minion(self):
         if self.current_health <= 0:
@@ -252,6 +257,7 @@ class Portal:
                 self.minion.reborn(self.position)
                 self.timer = None
 
+# father class of Minion and Boss, define basic atributes and methods
 class Monster:
     def __init__(self, monster_image_path = 'monster.png', position = (0,0), velocity = 2, health = 2):
         self.image = pygame.image.load(monster_image_path)
@@ -278,6 +284,7 @@ class Monster:
         else:
             y = self.position[1]
         
+        # gives monster the ability to jitter around the position (10% chance). 
         if uniform(0,1) > 0.9:
             x += randint(-10,10)
             y += randint(-10,10)
@@ -329,7 +336,7 @@ class Boss(Monster):
         self.show = True
 
     def move(self, target_pos):
-        if uniform(0,1) >= 0.995:
+        if uniform(0,1) >= 0.995: # gives boss the ability to blink to the target position (0.005% chance). 
             self.position = (uniform(*sorted([self.position[0],target_pos[0]])), uniform(*sorted([self.position[1],target_pos[1]])))
         if target_pos[0] > self.position[0]:
             x = self.position[0] + self.velocity
@@ -351,7 +358,7 @@ class Boss(Monster):
         if self.current_health <= 0:
             return
         window.blit(self.image, self.move(target_pos))
-        # rings
+        # boss has a rotating ring of minions around it to deal damage
         window.blits([(self.image, (self.position[0]+self._width/2+math.cos(self.ring_angle + i*6.28/self.n_minions)*self.ring_radius-self._width/2, self.position[1]+self._height/2+math.sin(self.ring_angle + i*6.28/self.n_minions)*self.ring_radius-self._height/2)) for i in range(self.n_minions)])
         self.ring_angle += 0.05
 
@@ -387,12 +394,11 @@ class Game:
         self.portal_3 = Portal(position = (self.window_w/10*1,self.window_h/10*9), side = 'LB')
         self.portal_4 = Portal(position = (self.window_w/10*9,self.window_h/10*9), side = 'RB')
         self.portals = [self.portal_1, self.portal_2, self.portal_3, self.portal_4]
-        #self.portals = []
         
         self.coin = Coin(window_w = self.window_w, window_h = self.window_h)
 
         self.store = Store()
-        #(color, damage, cost, radius = 5, velocity = 8)
+        # The bullet has atributes of (color, damage, cost, radius = 5, velocity = 8)
         self.store.append(1, Bullet(color = (255,0,0), str_color = "RED", damage = 1, cost = 1))
         self.store.append(2, Bullet(color = (0,255,0), str_color = "GREEN", damage = 3, cost = 2, velocity = 4))
         self.store.append(3, Bullet(color = (0,0,255), str_color = "BLUE", damage = 5, cost = 3, velocity = 2))
@@ -400,9 +406,9 @@ class Game:
     
     def main(self):
         while True:
-            self.check_events()
-            self.check_portals()
-            self.frame()
+            self.check_events() # monitor keyboard actions
+            self.check_portals() # remove broken portal from self.portals
+            self.frame() # draw window and elements
     
     def check_events(self):
         for event in pygame.event.get():
@@ -532,6 +538,7 @@ class Game:
 
         return objects
 
+    # used to visualize current health of all elements
     def draw_cores(self):
         for o in self.get_objects():
             x = o.position[0] + o._width/2
@@ -540,6 +547,7 @@ class Game:
             self.window.blit(health_text, (x - health_text.get_width()/2, y - health_text.get_height()/2))
             #pygame.draw.circle(surface = self.window, color = (255,0,0), center = (x,y), radius = 3)
 
+    # judge and display appropriate endings
     def draw_ending(self):
         if self.robot.current_health <= 0:
             game_text = self.game_font_large.render("Game Over", True, (255, 0, 0))
@@ -601,8 +609,5 @@ if __name__ == '__main__':
     test = Game()
     test.new_game()
     test.main()
-
-
-
 
 

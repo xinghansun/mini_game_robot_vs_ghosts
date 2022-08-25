@@ -26,7 +26,7 @@ class Bullet:
         self.position = position
         self.direction = direction
 
-    def move(self, objects, x_boundry):
+    def move(self, objects, x_boundary):
         if not self.fired:
             raise ValueError('The bullet has not been fired yet.')
         _ = (self.position[0] + self.velocity*self.direction, self.position[1])
@@ -36,13 +36,13 @@ class Bullet:
             hit_target.current_health -= self.damage
         else:
             self.position = _
-            self.out_of_boundry(x_boundry)
+            self.out_of_boundary(x_boundary)
         return self.position, hit_target
         
-    def out_of_boundry(self, x_boundry):
+    def out_of_boundary(self, x_boundary):
         if not self.fired:
             raise ValueError('The bullet has not been fired yet.')
-        if self.position[0] < 0 or self.position[0] > x_boundry:
+        if self.position[0] < 0 or self.position[0] > x_boundary:
             self.vanished = True
     
     def hit(self, objects:list, old_position, new_position):
@@ -83,10 +83,10 @@ class Clip:
         else:
             return None
     
-    def move_fired(self, objects, x_boundry):
+    def move_fired(self, objects, x_boundary):
         hit_target = []
         for bullet in self.fired:
-            hit_target = bullet.move(objects, x_boundry)
+            hit_target = bullet.move(objects, x_boundary)
         self.fired = [bullet for bullet in self.fired if not bullet.vanished]
         return hit_target
     
@@ -506,7 +506,7 @@ class Game:
         self.coin.generate(self.window)
 
     def draw_bullets(self):
-        hit_targets = self.robot.clip.move_fired(self.get_objects(), x_boundry = self.window_w)
+        hit_targets = self.robot.clip.move_fired(self.get_objects(), x_boundary = self.window_w)
         for bullet in self.robot.clip.fired:
             bullet.generate(self.window)
 

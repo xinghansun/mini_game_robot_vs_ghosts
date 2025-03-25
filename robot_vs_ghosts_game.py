@@ -1,12 +1,25 @@
+#!/usr/bin/env python3
+"""  A mini game that allows a robot to move around, pick up coins to
+purchase bullets, shoot bullets, and fight against minions and a boss.
+The robot can purchase bullets from the store and shoot them
+in horizontal directions.
+"""
+
+__author__ = "Xinghan Sun"
+__version__ = "0.1.0"
+
 import pygame
-from random import randint, uniform
 import math
+
+from random import randint, uniform
 from copy import copy
 from time import time
 
-# bullet objects that can be shot in horizontal directions
+
 class Bullet:
-    def __init__(self, color, str_color, damage, cost, radius = 5, velocity = 8):
+    """ A bullet object can be shot in horizontal directions. """
+
+    def __init__(self, color, str_color, damage, cost, radius=5, velocity=8):
         self.color = color
         self.radius = radius
         self.damage = damage
@@ -19,17 +32,22 @@ class Bullet:
         self.str_color = str_color
     
     def generate(self, window):
-        pygame.draw.circle(surface = window, color = self.color, center = self.position, radius = self.radius)
+        pygame.draw.circle(
+            surface=window,
+            color=self.color,
+            center=self.position,
+            radius=self.radius)
         
-    def fire(self, position = (0,0), direction = 1):
+    def fire(self, position=(0,0), direction=1):
         self.fired = True
         self.position = position
         self.direction = direction
 
-    # A bullet should disapear when it hits a target or is out of the window boundary
+    # A bullet should disapear when it hits a target
+    # or is out of the window boundary
     def move(self, objects, x_boundary):
         if not self.fired:
-            raise ValueError('The bullet has not been fired yet.')
+            raise ValueError('The bullet has not been fired yet.') from None
         _ = (self.position[0] + self.velocity*self.direction, self.position[1])
         hit_target = self.hit(objects, self.position, _)
         if hit_target is not None:
@@ -42,22 +60,33 @@ class Bullet:
         
     def out_of_boundary(self, x_boundary):
         if not self.fired:
-            raise ValueError('The bullet has not been fired yet.')
+            raise ValueError('The bullet has not been fired yet.') from None
         if self.position[0] < 0 or self.position[0] > x_boundary:
             self.vanished = True
     
-    def hit(self, objects:list, old_position, new_position):
+    def hit(self, objects: list, old_position, new_position):
         if not self.fired:
-            raise ValueError('The bullet has not been fired yet.')
-        on_path_targets = [o for o in objects if (o.position[1]<=old_position[1]<=o.position[1]+o._height) and ((old_position[0] <= o.position[0] <= new_position[0]) or (old_position[0] >= o.position[0] >= new_position[0]))]
+            raise ValueError('The bullet has not been fired yet.') from None
+        on_path_targets = [
+            o for o in objects
+            if (o.position[1] <= old_position[1] <= o.position[1]+o._height)
+            and ((old_position[0] <= o.position[0] <= new_position[0])
+                 or (old_position[0] >= o.position[0] >= new_position[0])
+                 )
+        ]
         if on_path_targets:
             self.vanished = True
-            return sorted(on_path_targets, key = lambda x: abs(x.position[0] - old_position[0]))[0]
+            return sorted(
+                on_path_targets,
+                key=lambda x: abs(x.position[0] - old_position[0])
+                )[0]
         else:
             return None
     
-# store obejct to keep inventory of bullets 
+
 class Store:
+    """ A store object that keeps track of the merchandise. """
+
     def __init__(self):
         self.merchandise = {}
     
@@ -67,13 +96,14 @@ class Store:
     def search(self, merchandise_num):
         return copy(self.merchandise[merchandise_num])
 
-# clip object which keeps track of unfired and fired bullets
 class Clip:
+    """ A clip object that keeps track of the bullets loaded and fired. """
+
     def __init__(self):
         self.clip = []
         self.fired = []
     
-    def load(self, bullet:Bullet):
+    def load(self, bullet: Bullet):
         self.clip.append(bullet)
         
     def shoot(self):
@@ -96,12 +126,19 @@ class Clip:
         for i in range(len(self.clip)):
             bullet = self.clip[i]
             position = (x_pos, y)
-            pygame.draw.circle(surface = window, color = bullet.color, center = position, radius = bullet.radius)
+            pygame.draw.circle(
+                surface=window,
+                color=bullet.color,
+                center=position,
+                radius=bullet.radius)
             x_pos += 5 + bullet.radius*2
 
-# coin obejct to be picked up at random locations
+
 class Coin:
-    def __init__(self, window_w, window_h, coin_image_path = 'coin.png'):
+    """ A coin object that can be picked up by the robot. """
+
+    def __init__(self, window_w, window_h,
+                 coin_image_path = './Source/coin.png'):
         self.window_w = window_w
         self.window_h = window_h
 
@@ -109,7 +146,8 @@ class Coin:
         self._width = self.image.get_width()
         self._height = self.image.get_height()
         
-        self.position = (randint(0, window_w - self._width), randint(0, window_h - self._height))
+        self.position = (randint(0, window_w - self._width),
+                         randint(0, window_h - self._height))
 
         self.__value = 1
     
@@ -117,20 +155,22 @@ class Coin:
     def value(self):
         return self.__value
     
-    # coins changes its location and appear at any coordinate of the window
+    # Coins changes its location and appear at any coordinate of the window.
     def refresh(self):
-        self.position = (randint(0, self.window_w - self._width), randint(0, self.window_h - self._height))
+        self.position = (randint(0, self.window_w - self._width),
+                         randint(0, self.window_h - self._height))
         return self.value
 
     def generate(self, window):
         window.blit(self.image, self.position)
 
 
-# coinbag object to count the coins collected and spent
+# Coinbag object to count the coins collected and spent.
 class CoinBag:
-    def __init__(self, coin_image_path = 'coin.png'):
+    def __init__(self, coin_image_path = './Source/coin.png'):
         self.__balance = 0
         self.image = pygame.image.load(coin_image_path)
+    
     @property
     def balance(self):
         return self.__balance
@@ -148,12 +188,20 @@ class CoinBag:
         game_font = pygame.font.SysFont("Arial", 25)
         window.blit(self.image, (x, y))
         text = game_font.render(f"X {self.__balance}", True, (255, 0, 0))
-        window.blit(text, (x + self.image.get_width() + 5, y + self.image.get_height()/2 - text.get_height()/2))
+        window.blit(
+            text,
+            (x + self.image.get_width() + 5,
+             y + self.image.get_height()/2 - text.get_height()/2)
+        )
 
 
-# robot obejct which has the ability to move, pick up coins, shoot bullets
 class Robot:
-    def __init__(self, window_w, window_h, robot_image_path = 'robot.png', velocity = 5, health = 100):
+    """ A robot object that can move, shoot, and pick up coins """
+
+    def __init__(self,
+                 window_w, window_h,
+                 robot_image_path='./Source/robot.png',
+                 velocity = 5, health = 100):
         self.window_w = window_w
         self.window_h = window_h
         
@@ -161,7 +209,9 @@ class Robot:
         self._width = self.image.get_width()
         self._height = self.image.get_height()
         
-        self.position = (window_w/2 - self._width/2, window_h/2 - self._height/2) # robot always appear in the center of the window in the begining of the game
+        # Robot always appear in the center of the window when game starts.
+        self.position = (window_w/2 - self._width/2,
+                         window_h/2 - self._height/2) 
         
         self.velocity = velocity
         self.health = health
@@ -170,7 +220,8 @@ class Robot:
         self.coin_bag = CoinBag()
         self.clip = Clip()
 
-    # purchase from store with the input merchandise_num. nothing happens if not enough coins in the coinbag
+    # Purchase from store with the input merchandise_num. 
+    # Nothing happens if not enough coins in the coinbag.
     def purchase(self, merchandise_num, store):
         if merchandise_num not in store.merchandise:
             raise ValueError('Invalid merchandise number.')
@@ -181,9 +232,14 @@ class Robot:
             self.clip.load(merchandise)
             self.coin_bag.spend(merchandise.cost)
         
-    # pick up coin and refresh the location of the coin
+    # Pick up coin and refresh the location of the coin.
     def pick_coin(self, coin):
-        if (self.position[0] <= coin.position[0]+coin._width/2 <= self.position[0] + self._width) and (self.position[1] <= coin.position[1]+coin._height/2 <= self.position[1] + self._height):
+        if ((self.position[0]
+             <= coin.position[0] + coin._width/2
+             <= self.position[0] + self._width)
+                and (self.position[1]
+                     <= coin.position[1] + coin._height/2
+                     <= self.position[1] + self._height)):
             self.coin_bag.earn(coin.refresh())
         else:
             pass
@@ -194,14 +250,24 @@ class Robot:
         bullet = self.clip.shoot()
         if bullet is None:
             return
-        bullet.fire(position = (self.position[0] + self._width/2, self.position[1] + self._height/2), direction = direction)
+        bullet.fire(
+            position=(
+                self.position[0] + self._width/2,
+                self.position[1] + self._height/2),
+            direction=direction
+        )
     
     def move(self, direction = (1,1)):
-        if 0 <= self.position[0] + direction[0]*self.velocity <= self.window_w - self._width:
+        if (0
+            <= self.position[0] + direction[0]*self.velocity
+            <= self.window_w - self._width):
             x = self.position[0] + direction[0]*self.velocity
         else:
             x = self.position[0]
-        if 0 <= self.position[1] + direction[1]*self.velocity <= self.window_h - self._height:
+
+        if (0 
+            <= self.position[1] + direction[1]*self.velocity
+            <= self.window_h - self._height):
             y = self.position[1] + direction[1]*self.velocity
         else:
             y = self.position[1]
@@ -213,9 +279,15 @@ class Robot:
             window.blit(self.image, self.position)
 
 
-# portal object owns minion(s) that specificly belong to it. minion(s) can be destroyed but will reborn as long as the portal exists.
+
 class Portal:
-    def __init__(self, portal_image_path = 'door.png', position = (0,0), side = 'LT', health = 2, reborn_cooldown = 200):
+    """ The portal object owns minion(s) that specificly belong to it. 
+    Minion(s) can be destroyed but will reborn as long as the portal exists.
+    """
+    
+    def __init__(self, portal_image_path='./Source',
+                 position=(0, 0), side = 'LT',
+                 health=2, reborn_cooldown=200):
         self.image = pygame.image.load(portal_image_path)
         self._width = self.image.get_width()
         self._height = self.image.get_height()
@@ -229,13 +301,16 @@ class Portal:
         if side == 'LT': # portal appears at left top corner
             self.position = position
         elif side == 'RT': # right top
-            self.position = (position[0] - self._width, position[1])
+            self.position = (position[0] - self._width, 
+                             position[1])
         elif side == 'LB': # left bottom
-            self.position = (position[0], position[1] - self._height)
+            self.position = (position[0], 
+                             position[1] - self._height)
         elif side == 'RB': # right bottom
-            self.position = (position[0] - self._width, position[1] - self._height)
+            self.position = (position[0] - self._width, 
+                             position[1] - self._height)
         else:
-            raise ValueError('Illegal side mark.')
+            raise ValueError('Illegal side mark.') from None
         
         self.minion = Minion(position = self.position)
         
@@ -244,7 +319,8 @@ class Portal:
             self.minion.current_health = 0
             return
         window.blit(self.image, self.position)
-        self.minion.generate(window, self.minion.move(target_pos))  # by integrating minion move here, minion(s) can disappear if portal is broke
+        # Minion(s) can disappear if portal is broke
+        self.minion.generate(window, self.minion.move(target_pos))  
 
     def reborn_minion(self):
         if self.current_health <= 0:
@@ -257,9 +333,12 @@ class Portal:
                 self.minion.reborn(self.position)
                 self.timer = None
 
-# father class of Minion and Boss, define basic atributes and methods
 class Monster:
-    def __init__(self, monster_image_path = 'monster.png', position = (0,0), velocity = 2, health = 2):
+    """ Father class of Minion and Boss, define basic atributes and methods """
+
+    def __init__(self, monster_image_path='Source/monster.png', 
+                 position=(0, 0), 
+                 velocity=2, health=2):
         self.image = pygame.image.load(monster_image_path)
         self._width = self.image.get_width()
         self._height = self.image.get_height()
@@ -284,7 +363,7 @@ class Monster:
         else:
             y = self.position[1]
         
-        # gives monster the ability to jitter around the position (10% chance). 
+        # Gives monster the ability to jitter around the position (10% chance). 
         if uniform(0,1) > 0.9:
             x += randint(-10,10)
             y += randint(-10,10)
@@ -299,7 +378,7 @@ class Monster:
     def is_dead(self):
         return True if self.current_health == 0 else False
 
-    def generate(self, window, target_pos):
+    def generate(self, window):
         if self.current_health <= 0:
             return
         window.blit(self.image, self.position)
@@ -307,7 +386,8 @@ class Monster:
     def deal_damage(self, target, radius):
         if self.current_health <= 0:
             return 
-        if radius**2 >= (target.position[0] - self.position[0])**2 + (target.position[1] - self.position[1])**2:
+        if radius**2 >= ((target.position[0] - self.position[0])**2 
+                         + (target.position[1] - self.position[1])**2):
             if target.current_health > 0:
                 target.current_health -= 1
 
@@ -336,8 +416,11 @@ class Boss(Monster):
         self.show = True
 
     def move(self, target_pos):
-        if uniform(0,1) >= 0.995: # gives boss the ability to blink to the target position (0.005% chance). 
-            self.position = (uniform(*sorted([self.position[0],target_pos[0]])), uniform(*sorted([self.position[1],target_pos[1]])))
+        # Gives boss the ability to blink to the target position (0.005% chance). 
+        if uniform(0,1) >= 0.995: 
+            self.position = (
+                uniform(*sorted([self.position[0],target_pos[0]])),
+                uniform(*sorted([self.position[1],target_pos[1]])))
         if target_pos[0] > self.position[0]:
             x = self.position[0] + self.velocity
         elif target_pos[0] < self.position[0]:
@@ -358,16 +441,32 @@ class Boss(Monster):
         if self.current_health <= 0:
             return
         window.blit(self.image, self.move(target_pos))
-        # boss has a rotating ring of minions around it to deal damage
-        window.blits([(self.image, (self.position[0]+self._width/2+math.cos(self.ring_angle + i*6.28/self.n_minions)*self.ring_radius-self._width/2, self.position[1]+self._height/2+math.sin(self.ring_angle + i*6.28/self.n_minions)*self.ring_radius-self._height/2)) for i in range(self.n_minions)])
+        # Boss has a rotating ring of minions around it to deal damage.
+        window.blits([(self.image, 
+                       (self.position[0] 
+                            + self._width/2
+                            + math.cos(
+                                self.ring_angle
+                                + i*6.28/self.n_minions)*self.ring_radius
+                            - self._width/2,
+                        self.position[1]
+                            + self._height/2
+                            + math.sin(
+                                self.ring_angle
+                                + i*6.28/self.n_minions)*self.ring_radius
+                            - self._height/2)
+                        ) for i in range(self.n_minions)])
         self.ring_angle += 0.05
 
 class Game:
+    """ The main game object that controls the game flow. """
+
     def __init__(self):
         pygame.init()
         
-        self.window_w, self.window_h = 640,640
-        self.window = pygame.display.set_mode((self.window_w, self.window_h + 100))
+        self.window_w, self.window_h = 640, 640
+        self.window = pygame.display.set_mode((self.window_w, 
+                                               self.window_h + 100))
         pygame.display.set_caption("Mini Game -- by Xinghan Sun")
 
         self.game_font_small = pygame.font.SysFont("Arial", 15)
@@ -376,7 +475,8 @@ class Game:
         
         self.clock = pygame.time.Clock()
         
-        self.to_left, self.to_right, self.to_up, self.to_down = False, False, False, False
+        self.to_left, self.to_right = False, False
+        self.to_up, self.to_down = False, False
 
         self.show_help = False
 
@@ -388,20 +488,46 @@ class Game:
         self.end_time = None
         self.robot = Robot(self.window_w, self.window_h)
 
-        self.boss = Boss(position = (0,0))
-        self.portal_1 = Portal(position = (self.window_w/10*1,self.window_h/10*1), side = 'LT')
-        self.portal_2 = Portal(position = (self.window_w/10*9,self.window_h/10*1), side = 'RT')
-        self.portal_3 = Portal(position = (self.window_w/10*1,self.window_h/10*9), side = 'LB')
-        self.portal_4 = Portal(position = (self.window_w/10*9,self.window_h/10*9), side = 'RB')
-        self.portals = [self.portal_1, self.portal_2, self.portal_3, self.portal_4]
+        self.boss = Boss(position=(0,0))
+        self.portal_1 = Portal(
+            position=(self.window_w/10*1, self.window_h/10*1),
+            side = 'LT')
+        self.portal_2 = Portal(
+            position = (self.window_w/10*9, self.window_h/10*1),
+            side = 'RT')
+        self.portal_3 = Portal(
+            position = (self.window_w/10*1, self.window_h/10*9),
+            side = 'LB')
+        self.portal_4 = Portal(
+            position = (self.window_w/10*9, self.window_h/10*9),
+            side = 'RB')
+        self.portals = [self.portal_1,
+                        self.portal_2,
+                        self.portal_3,
+                        self.portal_4]
         
-        self.coin = Coin(window_w = self.window_w, window_h = self.window_h)
+        self.coin = Coin(window_w=self.window_w, window_h=self.window_h)
 
         self.store = Store()
-        # The bullet has atributes of (color, damage, cost, radius = 5, velocity = 8)
-        self.store.append(1, Bullet(color = (255,0,0), str_color = "RED", damage = 1, cost = 1))
-        self.store.append(2, Bullet(color = (0,255,0), str_color = "GREEN", damage = 3, cost = 2, velocity = 4))
-        self.store.append(3, Bullet(color = (0,0,255), str_color = "BLUE", damage = 5, cost = 3, velocity = 2))
+        # The bullet has atributes of (color, damage, cost, radius, velocity)
+        # More powerful bullets are more expensive and slower.
+        self.store.append(1, 
+                          Bullet(color=(255, 0, 0),
+                                 str_color="RED",
+                                 damage=1,
+                                 cost=1))
+        self.store.append(2,
+                          Bullet(color=(0, 255, 0),
+                                 str_color="GREEN",
+                                 damage=3,
+                                 cost=2,
+                                 velocity=4))
+        self.store.append(3, 
+                          Bullet(color=(0, 0, 255),
+                                 str_color="BLUE",
+                                 damage=5,
+                                 cost=3,
+                                 velocity=2))
         
     
     def main(self):
@@ -505,14 +631,24 @@ class Game:
     def draw_robot(self):
         self.robot.generate(self.window)
         if self.robot.current_health > 0:
-            health_text = self.game_font_small.render(str(self.robot.current_health), True, (255, 0, 0))
-            self.window.blit(health_text, (self.robot.position[0] + self.robot._width/2 - health_text.get_width()/2, self.robot.position[1] + self.robot._height/2 + 7 - health_text.get_height()/2))
+            health_text = self.game_font_small.render(
+                str(self.robot.current_health),
+                True,
+                (255, 0, 0))
+            self.window.blit(
+                health_text,
+                (self.robot.position[0] 
+                    + self.robot._width/2 
+                    - health_text.get_width()/2,
+                 self.robot.position[1] 
+                    + self.robot._height/2 
+                    + 7 # a little bit lower than the image center
+                    - health_text.get_height()/2))
 
     def draw_coin(self):
         self.coin.generate(self.window)
 
     def draw_bullets(self):
-        hit_targets = self.robot.clip.move_fired(self.get_objects(), x_boundary = self.window_w)
         for bullet in self.robot.clip.fired:
             bullet.generate(self.window)
 
@@ -538,31 +674,55 @@ class Game:
 
         return objects
 
-    # used to visualize current health of all elements
+    # Used to visualize current health of all elements.
     def draw_cores(self):
         for o in self.get_objects():
             x = o.position[0] + o._width/2
             y = o.position[1] + o._height/2
-            health_text = self.game_font_small.render(str(o.current_health), True, (255, 0, 0))
-            self.window.blit(health_text, (x - health_text.get_width()/2, y - health_text.get_height()/2))
-            #pygame.draw.circle(surface = self.window, color = (255,0,0), center = (x,y), radius = 3)
+            health_text = self.game_font_small.render(
+                str(o.current_health),
+                True,
+                (255, 0, 0))
+            self.window.blit(
+                health_text,
+                (x - health_text.get_width()/2,
+                 y - health_text.get_height()/2))
+            # DISABLED: pygame.draw.circle(surface=self.window, color=(255,0,0), center=(x,y), radius=3)
 
-    # judge and display appropriate endings
+    # Judge and display appropriate endings.
     def draw_ending(self):
         if self.robot.current_health <= 0:
-            game_text = self.game_font_large.render("Game Over", True, (255, 0, 0))
-            game_text_x = self.window_w / 2 - game_text.get_width() / 2
-            game_text_y = self.window_h / 2 - game_text.get_height() / 2
-            pygame.draw.rect(self.window, (0, 0, 0), (game_text_x-10, game_text_y-10, game_text.get_width()+10*2, game_text.get_height()+10))
+            game_text = self.game_font_large.render(
+                "Game Over",
+                True,
+                (255, 0, 0))
+            game_text_x = self.window_w/2 - game_text.get_width()/2
+            game_text_y = self.window_h/2 - game_text.get_height()/2
+            pygame.draw.rect(
+                self.window,
+                (0, 0, 0),
+                (game_text_x - 10,
+                 game_text_y - 10,
+                 game_text.get_width() + 10*2,
+                 game_text.get_height() + 10))
             self.window.blit(game_text, (game_text_x, game_text_y))
             return
         if self.boss.current_health <= 0:
             if self.end_time is None:
                 self.end_time = time()
-            game_text = self.game_font.render(f"Cleared in {round(self.end_time - self.init_time)}s", True, (255, 0, 0))
-            game_text_x = self.window_w / 2 - game_text.get_width() / 2
-            game_text_y = self.window_h / 2 - game_text.get_height() / 2
-            pygame.draw.rect(self.window, (0, 0, 0), (game_text_x, game_text_y, game_text.get_width(), game_text.get_height()))
+            game_text = self.game_font.render(
+                f"Cleared in {round(self.end_time - self.init_time)}s",
+                True,
+                (255, 0, 0))
+            game_text_x = self.window_w/2 - game_text.get_width()/2
+            game_text_y = self.window_h/2 - game_text.get_height()/2
+            pygame.draw.rect(
+                self.window,
+                (0, 0, 0),
+                (game_text_x,
+                 game_text_y,
+                 game_text.get_width(),
+                 game_text.get_height()))
             self.window.blit(game_text, (game_text_x, game_text_y))
             return
 
@@ -572,29 +732,56 @@ class Game:
     def draw_clip(self):
         _ = self.game_font.render("Bullets:", True, (255, 0, 0))
         self.window.blit(_, (20, self.window_h + 5))
-        self.robot.clip.generate(self.window, 20+_.get_width()+10, self.window_h + 5 + _.get_height()/2)
+        self.robot.clip.generate(
+            self.window,
+            20 + _.get_width() + 10,
+            self.window_h + 5 + _.get_height()/2)
 
     def draw_hints(self):
-        pygame.draw.rect(self.window, (0,0,0), (0, self.window_h, self.window_w, 100))
-        game_text = self.game_font_small.render("F1 = help (show/hide)", True, (255, 0, 0))
-        self.window.blit(game_text, (220, self.window_h + 100 - game_text.get_height() - 10))
-        game_text = self.game_font_small.render("F2 = new game", True, (255, 0, 0))
-        self.window.blit(game_text, (380, self.window_h + 100 - game_text.get_height() - 10))
-        game_text = self.game_font_small.render("Esc = exit game", True, (255, 0, 0))
-        self.window.blit(game_text, (510, self.window_h + 100 - game_text.get_height() - 10))
+        pygame.draw.rect(self.window,
+                         (0,0,0),
+                         (0, self.window_h, self.window_w, 100))
+        game_text = self.game_font_small.render("F1 = help (show/hide)",
+                                                True,
+                                                (255, 0, 0))
+        self.window.blit(game_text,
+                         (220,
+                          self.window_h + 100 - game_text.get_height() - 10))
+        game_text = self.game_font_small.render("F2 = new game",
+                                                True,
+                                                (255, 0, 0))
+        self.window.blit(game_text,
+                         (380,
+                          self.window_h + 100 - game_text.get_height() - 10))
+        game_text = self.game_font_small.render("Esc = exit game",
+                                                True,
+                                                (255, 0, 0))
+        self.window.blit(game_text,
+                         (510,
+                          self.window_h + 100 - game_text.get_height() - 10))
 
     def help(self):
         rect_w = 440
         rect_h = 350
         rect_x = self.window_w/2 - rect_w/2
         rect_y = self.window_h/2 - rect_h/2
-        pygame.draw.rect(self.window, (0,0,255), (rect_x, rect_y, rect_w, rect_h))
+        pygame.draw.rect(self.window,
+                         (0,0,255),
+                         (rect_x, rect_y, rect_w, rect_h))
         lines = ["Left: ←", "Right: →", "Up: ↑", "Down: ↓"]
         lines += ["Shoot Left: ← + SPACE", "Shoot Right: → + SPACE"]
-        for num, bullet in sorted(self.store.merchandise.items(), key = lambda x: x[0]):
-            lines.append(f"Purchase {bullet.str_color} bullet (Volocity={bullet.velocity};Damage={bullet.damage};Cost={bullet.cost}): {num}")
+        for num, bullet in sorted(self.store.merchandise.items(),
+                                  key = lambda x: x[0]):
+            lines.append(
+                f"Purchase {bullet.str_color} bullet "
+                f"(Velocity={bullet.velocity}; "
+                f"Damage={bullet.damage}; "
+                f"Cost={bullet.cost}): {num}"
+            )
         
-        lines += ["","Note1: Minions will reborn if the portals are not broken.","Note2: Boss has chance blinking to your position."]
+        lines += ["",
+                  "Note1: Minions will reborn if the portals are not broken.",
+                  "Note2: Boss has chance blinking to your position."]
 
         last_h = rect_y + 40
         for line in lines:
@@ -603,7 +790,11 @@ class Game:
             last_h += text.get_height() + 5
 
     def check_portals(self):
-        self.portals = [portal for portal in self.portals if portal.current_health > 0]
+        self.portals = [
+            portal for portal in self.portals if portal.current_health > 0
+        ]
+
+
 
 if __name__ == '__main__':
     test = Game()

@@ -3,45 +3,36 @@
 In "Robot vs Ghosts," you control a robot navigating through a haunted environment filled with ghosts. The objective is to avoid or eliminate the ghosts while collecting items to score points. The game tests your reflexes and strategic thinking as you progress through increasingly challenging levels.
 
 ### Robot
-The robot is the main character you control. It can move in all directions and has the ability to shoot bullets to eliminate ghosts.
+The robot is the main character you control. It can move in all directions and has the ability to shoot bullets to eliminate ghosts. You can pick up coins from the map.
+
+### Coins
+There is always one coin in the map. Once you pick up the coin, another will appear at a random position.
 
 ### Bullet
-Bullets are fired by the robot to eliminate ghosts. They have a limited range and can be collected as items throughout the game.
+Bullets are fired by the robot to eliminate ghosts. There are three types of bullets that have different damage and speed. The bullets can only be shot in horizontal directions. Bullets can be purchased using coins.  
 
 ### Clip
-Clips are items that replenish the robot's ammunition. Collecting clips ensures that the robot can continue to fire bullets at the ghosts.
-
-### Store
-The store is a place where you can purchase upgrades and items for the robot using points collected during the game. Upgrades can enhance the robot's abilities and improve your chances of success.
+The clip shows robot's ammunition by bullet colors. The bullets can only be shot in sequence that is shown in the clip (from left to right). 
 
 ### Portal
-Portals are gateways that transport the robot to different levels or areas within the game. They are often guarded by ghosts and require strategic planning to access.
+Portals are gateways that will continuously transport minion ghosts to the map. You need to destroy the portal to completely clear the minion ghosts.
 
 ### Minion
-Minions are common ghost enemies that the robot encounters. They are relatively weak but can be dangerous in large numbers.
+Minions are ghost enemies that the robot encounters at stage one. They are relatively weak but will chase the robot to anywhere!
 
 ### Boss
-Bosses are powerful ghost enemies that appear at the end of certain levels. Defeating a boss requires skill and strategy, as they have unique abilities and higher health.
-
-### Store
-The store is a place where you can purchase upgrades and items for the robot using points collected during the game. Upgrades can enhance the robot's abilities and improve your chances of success.
+Boss is a powerful ghost enemy that appear at stage two when you cleared all minions and portals. Defeating a boss requires skill and strategy, as they can blink towards you by chance and have more health than minions. 
 
 ## Controls
 - Use the arrow keys or WASD to move the robot in different directions.
-- Press the spacebar to shoot bullets.
-- Collect clips to replenish ammunition.
-- Use points to purchase upgrades and items in the store.
-- Navigate through portals to access new levels.
+- Press the spacebar along with left/right direction to shoot bullets.
+- Collect coins to purchase bullets and replenish ammunition.
 - Defeat minions and bosses to progress through the game.
 
 ## Demo
-Watch a demo playthrough of the game to see how it works:
+Watch an demo playthrough of the game to see how it works:
 
-<div align="center">
-    <a href="https://github.com/user-attachments/assets/294be1f7-c2d1-40eb-bd31-52524122317e">
-        <img src="https://github.com/user-attachments/assets/294be1f7-c2d1-40eb-bd31-52524122317e" alt="Demo Video" />
-    </a>
-</div>
+https://github.com/user-attachments/assets/294be1f7-c2d1-40eb-bd31-52524122317e
 
 
 ## License

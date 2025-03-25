@@ -34,10 +34,10 @@ The store is a place where you can purchase upgrades and items for the robot usi
 - Navigate through portals to access new levels.
 - Defeat minions and bosses to progress through the game.
 
-## Example Play Video
-Watch an example playthrough of the game to see how it works:
+## Demo
+Watch an demo playthrough of the game to see how it works:
 
-![Example Play Video](./Example/test_run_20220825.mov)
+![Demo Play Video](https://github.com/xinghansun/mini_game_robot_vs_ghosts/blob/main/Demo/test_run_20220825.mov)
 
 ## License
 The authors of the image materials (.png) are Erkki Kaila, Antti Laaksonen, and Matti Luukkainen.

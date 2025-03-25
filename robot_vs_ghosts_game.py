@@ -285,7 +285,7 @@ class Portal:
     Minion(s) can be destroyed but will reborn as long as the portal exists.
     """
     
-    def __init__(self, portal_image_path='./Source',
+    def __init__(self, portal_image_path='./Source/door.png',
                  position=(0, 0), side = 'LT',
                  health=2, reborn_cooldown=200):
         self.image = pygame.image.load(portal_image_path)
@@ -378,7 +378,7 @@ class Monster:
     def is_dead(self):
         return True if self.current_health == 0 else False
 
-    def generate(self, window):
+    def generate(self, window, target_pos):
         if self.current_health <= 0:
             return
         window.blit(self.image, self.position)
@@ -649,6 +649,9 @@ class Game:
         self.coin.generate(self.window)
 
     def draw_bullets(self):
+        hit_targets = self.robot.clip.move_fired(
+            self.get_objects(), 
+            x_boundary = self.window_w)
         for bullet in self.robot.clip.fired:
             bullet.generate(self.window)
 

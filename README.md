@@ -37,7 +37,7 @@ The store is a place where you can purchase upgrades and items for the robot usi
 ## Demo
 Watch an demo playthrough of the game to see how it works:
 
-![Demo Play Video](https://github.com/xinghansun/mini_game_robot_vs_ghosts/blob/main/Demo/test_run_20220825.mov)
+![Demo Play Video](https://github.com/user-attachments/assets/86c3340f-bc69-4ae4-96cf-a51d23171d6b)
 
 ## License
 The authors of the image materials (.png) are Erkki Kaila, Antti Laaksonen, and Matti Luukkainen.

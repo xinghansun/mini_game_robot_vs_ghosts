@@ -37,11 +37,7 @@ The store is a place where you can purchase upgrades and items for the robot usi
 ## Demo
 Watch a demo playthrough of the game to see how it works:
 
-<div align="center">
-    <a href="https://github.com/user-attachments/assets/294be1f7-c2d1-40eb-bd31-52524122317e">
-        <img src="https://github.com/user-attachments/assets/294be1f7-c2d1-40eb-bd31-52524122317e" alt="Demo Video" />
-    </a>
-</div>
+https://github.com/user-attachments/assets/a1427895-2a88-480d-ad1a-623d57c16673
 
 
 ## License

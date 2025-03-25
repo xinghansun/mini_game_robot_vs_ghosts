@@ -31,9 +31,7 @@ Boss is a powerful ghost enemy that appear at stage two when you cleared all min
 
 ## Demo
 Watch an demo playthrough of the game to see how it works:
-
 https://github.com/user-attachments/assets/a1427895-2a88-480d-ad1a-623d57c16673
-
 
 ## License
 The authors of the image materials (.png) are Erkki Kaila, Antti Laaksonen, and Matti Luukkainen.

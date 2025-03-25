@@ -32,7 +32,7 @@ Boss is a powerful ghost enemy that appear at stage two when you cleared all min
 ## Demo
 Watch an demo playthrough of the game to see how it works:
 
-https://github.com/user-attachments/assets/294be1f7-c2d1-40eb-bd31-52524122317e
+https://github.com/user-attachments/assets/a1427895-2a88-480d-ad1a-623d57c16673
 
 
 ## License
